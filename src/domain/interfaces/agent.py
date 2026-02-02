@@ -5,7 +5,7 @@ from typing import TypeVar, Generic, Dict, Any, Type
 from abc import ABC
 
 from src.domain.entities.agent import (
-    BaseAgentResponse, State, StructuredQueryResponse
+    BaseAgentResponse, State, StructuredQueryResponse, VisualizationResponse
 )
 
 
@@ -40,4 +40,11 @@ class IStructQueryAgent(
     BaseAgent[StructuredQueryResponse]
 ):
     def __init__(self, llm: ILLM[StructuredQueryResponse]) -> None:
+        super().__init__(llm)
+
+
+class IVisualizationAgent(
+    BaseAgent[VisualizationResponse]
+):
+    def __init__(self, llm: ILLM[VisualizationResponse]) -> None:
         super().__init__(llm)

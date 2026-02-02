@@ -6,11 +6,30 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "dotenv>=0.9.9",
-    "langchain>=1.2.7",
-    "langchain-core>=1.2.7",
+    "langchain>=1.2.8",
+    "langchain-core>=1.2.8",
     "langchain-google-genai>=4.2.0",
     "langchain-ollama>=1.0.1",
     "langgraph>=1.0.7",
+    "pandas>=2.3.3",
+    "plotly>=6.5.2",
     "pydantic>=2.12.5",
-    "rich>=14.3.1",
+    "rich>=14.3.2",
+    "streamlit>=1.53.1",
 ]
+# dependencies = [
+#     "altair<5",
+#     "dotenv>=0.9.9",
+#     "langchain>=1.2.7",
+#     "langchain-core>=1.2.7",
+#     "langchain-google-genai>=4.2.0",
+#     "langchain-ollama>=1.0.1",
+#     "langgraph>=1.0.7",
+#     "matplotlib>=3.10.8",
+#     "pandas>=3.0.0",
+#     "plotly>=6.5.2",
+#     "pyarrow<15.0.0",
+#     "pydantic>=2.12.5",
+#     "rich>=14.3.1",
+#     "streamlit>=1.19.0",
+# ]

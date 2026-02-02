@@ -6,12 +6,13 @@ from langgraph.graph import StateGraph, END
 
 from src.application.utils.get_sql_dll import get_sql_ddl, run_query
 from src.domain.entities.agent import State, StructuredQueryResponse
-from src.domain.interfaces.agent import IStructQueryAgent
+from src.domain.interfaces.agent import IStructQueryAgent, IVisualizationAgent
 
 
 class Pipeline():
-    def __init__(self, struct_agent: IStructQueryAgent) -> None:
+    def __init__(self, struct_agent: IStructQueryAgent, vis_agent: IVisualizationAgent) -> None:
         self.struct_agent: IStructQueryAgent = struct_agent
+        self.vis_agent: IVisualizationAgent = vis_agent
         self.workflow: CompiledStateGraph = self._build_workflow()
 
     def _build_workflow(self) -> CompiledStateGraph:
@@ -50,8 +51,14 @@ class Pipeline():
             }
 
         def todo_vis_node(state: State):
-            print("TODO vis node")
-            print(state["output"].vis_type)
+            print(f"Visualizing with type: {state['output'].vis_type}")
+
+            response = self.vis_agent.invoke(state)
+
+            # O código gerado vai para o estado para ser executado no frontend
+            return {
+                "viz_code": response.code
+            }
 
         wf = StateGraph(State)
 

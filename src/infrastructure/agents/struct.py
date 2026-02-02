@@ -28,6 +28,7 @@ Utilize essas informações para corrigir e gerar uma nova query correta.
    - Ano específico: `strftime('%Y', data_coluna) = '2024'`
    - Mês específico: `strftime('%m', data_coluna) = '05'`
 5. **Contagem Única**: Use `COUNT(DISTINCT cliente_id)` para perguntas sobre "quantidade de clientes".
+6. **Dataframe**: O retorno da query será usado posteriormente para a criação de um dataframe.
 
 ### EXEMPLO DE RACIOCÍNIO:
 Pergunta: "Quantos clientes interagiram com campanhas de WhatsApp em 2024?"
@@ -40,6 +41,7 @@ Passos:
 ### FORMATO DE SAÍDA:
 - Retorne APENAS o código SQL puro, sem explicações ou blocos de markdown.
 - Tipo de visualização.
+- O output da query deve ser compatível com pandas, ou seja, possível de transformar em um dataframe.
 """
 
 
@@ -47,7 +49,7 @@ class StructurerAgent(IStructQueryAgent):
     def __init__(self) -> None:
         llm: LangchainAdapter = LangchainAdapter(
             "Structurer",
-            "qwen2.5:3b", "ollama",
+            "gemini-2.5-flash", "google-genai",
             SYSTEM_PROMPT_CONTENT, StructuredQueryResponse
         )
         super().__init__(llm)

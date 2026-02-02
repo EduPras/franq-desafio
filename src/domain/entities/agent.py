@@ -22,6 +22,10 @@ class StructuredQueryResponse(BaseAgentResponse):
     vis_type: Literal['bar', 'pie', 'line', 'table', 'text']
 
 
+class VisualizationResponse(BaseAgentResponse):
+    code: str
+
+
 class State(TypedDict):
     input_text: NotRequired[str]
     ddl: str
@@ -31,3 +35,4 @@ class State(TypedDict):
     queries: Annotated[list, operator.add]
     output: NotRequired[StructuredQueryResponse]
     data: NotRequired[Any]
+    viz_code: NotRequired[str]

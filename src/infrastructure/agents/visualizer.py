@@ -1,55 +1,70 @@
-from src.domain.interfaces.agent import IStructQueryAgent
-from src.domain.entities.agent import (
-    State, StructuredQueryResponse
-)
-
+from src.domain.interfaces.agent import IStructQueryAgent # Ou uma interface genérica se preferir
+from src.domain.entities.agent import State, VisualizationResponse
 from src.infrastructure.agents.adapter import LangchainAdapter
+import pandas as pd
 
+SYSTEM_PROMPT_VIS = """Você é um Especialista em Data Science e Streamlit.
+### TAREFA
+Sua tarefa é gerar exclusivamente código Python para visualizar dados em um dashboard Streamlit.
+Você receberá o esquema dos dados (colunas e tipos), uma amostra dos dados e o tipo de gráfico desejado.
 
-SYSTEM_PROMPT_CONTENT = """Você é um Especialista em SQLite.
-Sua tarefa é converter perguntas em linguagem natural em queries SQL precisas.
-
-### BANCO DE DADOS (DDL):
-{ddl}
+### BIBLIOTECAS DISPONÍVEIS:
+- `streamlit as st`
+- `pandas as pd`
+- `plotly.express as px`
 
 ### REGRAS CRÍTICAS:
-1. **Filtro de Entidades**: Identifique todas as entidades mencionadas (ex: 'WhatsApp', 'App', 'Maio', '2024'). Cada entidade deve se tornar um filtro `WHERE`.
-2. **Mapeamento de Ações**:
-   - "Interagiram" -> `interagiu = 1` ou `interagiu IS TRUE`.
-   - "Resolvidas" -> `resolvido = 1`.
-3. **Case Sensitivity & LOWER**: Sempre use `LOWER(coluna) = LOWER('valor')` para colunas de texto (canal, categoria, profissão, etc).
-4. **Tratamento de Datas (Sintaxe SQLite)**:
-   - Ano específico: `strftime('%Y', data_coluna) = '2024'`
-   - Mês específico: `strftime('%m', data_coluna) = '05'`
-5. **Contagem Única**: Use `COUNT(DISTINCT cliente_id)` para perguntas sobre "quantidade de clientes".
-
-### EXEMPLO DE RACIOCÍNIO:
-Pergunta: "Quantos clientes interagiram com campanhas de WhatsApp em 2024?"
-Passos:
-- Tabela: `campanhas_marketing`
-- Filtro 1: `LOWER(canal) = LOWER('WhatsApp')`
-- Filtro 2: `interagiu = 1` (ação de interagir)
-- Filtro 3: `strftime('%Y', data_envio) = '2024'` (ano)
+1. **Dados**: Os dados originais estarão disponíveis em uma variável chamada `data` (lista de dicionários). 
+2. **DataFrame**: Inicie sempre convertendo os dados: `df = pd.DataFrame(data)`.
+3. **Eixos**: Escolha inteligentemente as colunas para os eixos X e Y com base nos nomes e tipos. 
+   - Ex: Colunas de data/tempo sempre no eixo X para gráficos de linha.
+   - Ex: Colunas numéricas (somas, contagens) sempre no eixo Y.
+4. **Interatividade**: Prefira usar `px` (Plotly Express) para gráficos e renderize com `st.plotly_chart(fig, use_container_width=True)`.
+5. **Formatação**: Se o tipo for `table`, use `st.dataframe(df, use_container_width=True)`. Se for `text`, use `st.metric` ou `st.write`.
+6. **Limpeza**: Se houver muitas categorias em um gráfico de pizza/barra (mais de 10), agrupe as menores em 'Outros'.
 
 ### FORMATO DE SAÍDA:
-- Retorne APENAS o código SQL puro, sem explicações ou blocos de markdown.
+- Retorne APENAS o código Python puro.
+- Não use blocos de markdown (```python ... ```).
+- Não dê explicações.
 """
 
-
-class VisualizerAgent(IVisualizerAgent):
+class VisualizationAgent():
     def __init__(self) -> None:
-        llm: LangchainAdapter = LangchainAdapter(
+        # Usando o mesmo adaptador que você criou
+        self.llm: LangchainAdapter = LangchainAdapter(
             "Visualizer",
-            "gemini-2.5-flash", "google-genai",
-            SYSTEM_PROMPT_CONTENT, StructuredQueryResponse
+            "gemini-2.0-flash", "google-genai", # Atualizado para a versão estável mais recente
+            SYSTEM_PROMPT_VIS, VisualizationResponse
         )
-        super().__init__(llm)
 
-    def invoke(self, state: State) -> VisualizerResponse:
-        ddl = state.get('ddl')
-        input_text = state.get('input_text')
-        question = state.get('input_text')
-        human_msg = "DDL:\n{ddl}\n\nQuestion: {question}"
-        values = {"ddl": ddl, "question": question}
+    def invoke(self, state: State) -> VisualizationResponse:
+        data = state.get("data")
+        vis_type = state["output"].vis_type # Tipo definido pelo StructurerAgent
+        user_query = state.get("input_text")
+        
+        # Gerar um resumo dos dados para o LLM não se perder
+        df_sample = pd.DataFrame(data).head(3)
+        schema_info = df_sample.dtypes.to_dict()
+        sample_records = df_sample.to_dict(orient="records")
+
+        human_msg = """
+        **CONTEXTO**
+        Pergunta do Usuário: {query}
+        Tipo de Gráfico Solicitado: {vis_type}
+        
+        **DADOS**
+        Esquema (Colunas/Tipos): {schema}
+        Amostra (3 linhas): {sample}
+        
+        Gere o código Python para criar esta visualização no Streamlit.
+        """
+        
+        values = {
+            "query": user_query,
+            "vis_type": vis_type,
+            "schema": str(schema_info),
+            "sample": str(sample_records)
+        }
 
         return self.llm.call(human_msg, values)
