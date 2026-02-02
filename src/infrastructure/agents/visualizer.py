@@ -1,4 +1,4 @@
-from src.domain.interfaces.agent import IStructQueryAgent # Ou uma interface genérica se preferir
+from src.domain.interfaces.agent import IVisualizationAgent
 from src.domain.entities.agent import State, VisualizationResponse
 from src.infrastructure.agents.adapter import LangchainAdapter
 import pandas as pd
@@ -19,8 +19,8 @@ Você receberá o esquema dos dados (colunas e tipos), uma amostra dos dados e o
 3. **Eixos**: Escolha inteligentemente as colunas para os eixos X e Y com base nos nomes e tipos. 
    - Ex: Colunas de data/tempo sempre no eixo X para gráficos de linha.
    - Ex: Colunas numéricas (somas, contagens) sempre no eixo Y.
-4. **Interatividade**: Prefira usar `px` (Plotly Express) para gráficos e renderize com `st.plotly_chart(fig, use_container_width=True)`.
-5. **Formatação**: Se o tipo for `table`, use `st.dataframe(df, use_container_width=True)`. Se for `text`, use `st.metric` ou `st.write`.
+4. **Interatividade**: Prefira usar `px` (Plotly Express) para gráficos e renderize com st.plotly_chart(fig, width='content'). Não use use_container_width.
+5. **Formatação**: Se o tipo for `table`, use `st.dataframe(df, width='content')`. Se for `text`, use `st.metric` ou `st.write`.
 6. **Limpeza**: Se houver muitas categorias em um gráfico de pizza/barra (mais de 10), agrupe as menores em 'Outros'.
 
 ### FORMATO DE SAÍDA:
@@ -29,21 +29,20 @@ Você receberá o esquema dos dados (colunas e tipos), uma amostra dos dados e o
 - Não dê explicações.
 """
 
-class VisualizationAgent():
+
+class VisualizationAgent(IVisualizationAgent):
     def __init__(self) -> None:
-        # Usando o mesmo adaptador que você criou
         self.llm: LangchainAdapter = LangchainAdapter(
             "Visualizer",
-            "gemini-2.0-flash", "google-genai", # Atualizado para a versão estável mais recente
+            "gemini-2.0-flash", "google-genai",
             SYSTEM_PROMPT_VIS, VisualizationResponse
         )
 
     def invoke(self, state: State) -> VisualizationResponse:
         data = state.get("data")
-        vis_type = state["output"].vis_type # Tipo definido pelo StructurerAgent
+        vis_type = state["output"].vis_type
         user_query = state.get("input_text")
-        
-        # Gerar um resumo dos dados para o LLM não se perder
+
         df_sample = pd.DataFrame(data).head(3)
         schema_info = df_sample.dtypes.to_dict()
         sample_records = df_sample.to_dict(orient="records")
@@ -59,7 +58,7 @@ class VisualizationAgent():
         
         Gere o código Python para criar esta visualização no Streamlit.
         """
-        
+
         values = {
             "query": user_query,
             "vis_type": vis_type,

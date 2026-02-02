@@ -1,18 +1,23 @@
-from pathlib import Path
 from typing import Literal
 from rich import print
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph import StateGraph, END
 
-from src.application.utils.get_sql_dll import get_sql_ddl, run_query
 from src.domain.entities.agent import State, StructuredQueryResponse
 from src.domain.interfaces.agent import IStructQueryAgent, IVisualizationAgent
+from src.domain.interfaces.database import IDatabaseSQL
 
 
 class Pipeline():
-    def __init__(self, struct_agent: IStructQueryAgent, vis_agent: IVisualizationAgent) -> None:
+    def __init__(
+            self,
+            struct_agent: IStructQueryAgent,
+            vis_agent: IVisualizationAgent,
+            database: IDatabaseSQL
+    ) -> None:
         self.struct_agent: IStructQueryAgent = struct_agent
         self.vis_agent: IVisualizationAgent = vis_agent
+        self.database: IDatabaseSQL = database
         self.workflow: CompiledStateGraph = self._build_workflow()
 
     def _build_workflow(self) -> CompiledStateGraph:
@@ -64,7 +69,7 @@ class Pipeline():
 
         # nodes
         wf.add_node("struct_llm", run_llm_struct)
-        wf.add_node("sql_query", run_query)
+        wf.add_node("sql_query", self.database.run_query)
         wf.add_node("error_node", error_handler)
         wf.add_node("vis_node", todo_vis_node)
         # edges / connections
@@ -89,7 +94,7 @@ class Pipeline():
         initial_state = State(
             input_text=input_text,
             success=False,
-            ddl=get_sql_ddl(Path('data/anexo_desafio_1.db')),
+            ddl=self.database.ddl,
             retries=0,
             queries=[],
             error_messages=[]

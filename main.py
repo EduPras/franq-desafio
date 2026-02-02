@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from src.application.use_cases.workflow import Pipeline
 from src.infrastructure.agents.struct import StructurerAgent
 from src.infrastructure.agents.visualizer import VisualizationAgent
+from src.infrastructure.database.sqlite import SqliteDB
 
 load_dotenv()
 st.set_page_config(page_title="Franq - SQL chat", layout="centered")
@@ -16,7 +17,11 @@ def main():
 
     @st.cache_resource
     def get_pipeline():
-        return Pipeline(StructurerAgent(), VisualizationAgent())
+        return Pipeline(
+            StructurerAgent(),
+            VisualizationAgent(),
+            SqliteDB('data/anexo_desafio_1.db')
+        )
 
     pipeline = get_pipeline()
 

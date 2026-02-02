@@ -14,6 +14,8 @@ T_Response = TypeVar("T_Response", bound=BaseAgentResponse)
 
 
 class ILLM(ABC, Generic[T_Response]):
+    """LLM Interface"""
+
     def __init__(self) -> None:
         super().__init__()
         self.response_model: Type[T_Response]
