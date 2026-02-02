@@ -7,6 +7,10 @@ from src.services import Pipeline
 from src.infrastructure import (
     StructurerAgent, VisualizationAgent, SqliteDB
 )
+from src.utils.markdown import import_markdown_as_string
+
+STRUCT_PROMPT = './prompts/struct_agent.md'
+VIS_PROMPT = './prompts/visualizer_agent.md'
 
 load_dotenv()
 
@@ -19,8 +23,8 @@ def main():
     @st.cache_resource
     def get_pipeline():
         return Pipeline(
-            StructurerAgent(),
-            VisualizationAgent(),
+            StructurerAgent(import_markdown_as_string(STRUCT_PROMPT)),
+            VisualizationAgent(import_markdown_as_string(VIS_PROMPT)),
             SqliteDB('data/anexo_desafio_1.db')
         )
 
