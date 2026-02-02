@@ -22,6 +22,7 @@ class Pipeline():
 
     def _build_workflow(self) -> CompiledStateGraph:
 
+        # Nodes
         def error_handler(state: State):
             print("Treating errors")
             errors = state.get("error_messages", [])
@@ -57,14 +58,12 @@ class Pipeline():
 
         def todo_vis_node(state: State):
             print(f"Visualizing with type: {state['output'].vis_type}")
-
             response = self.vis_agent.invoke(state)
-
-            # O código gerado vai para o estado para ser executado no frontend
             return {
                 "viz_code": response.code
             }
 
+        # Workflow
         wf = StateGraph(State)
 
         # nodes

@@ -3,12 +3,13 @@ import pandas as pd
 import plotly.express as px
 from dotenv import load_dotenv
 
-from src.application.use_cases.workflow import Pipeline
-from src.infrastructure.agents.struct import StructurerAgent
-from src.infrastructure.agents.visualizer import VisualizationAgent
-from src.infrastructure.database.sqlite import SqliteDB
+from src.services import Pipeline
+from src.infrastructure import (
+    StructurerAgent, VisualizationAgent, SqliteDB
+)
 
 load_dotenv()
+
 st.set_page_config(page_title="Franq - SQL chat", layout="centered")
 
 
