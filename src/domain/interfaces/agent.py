@@ -5,11 +5,11 @@ from typing import TypeVar, Generic, Dict, Any, Type
 from abc import ABC
 
 from src.domain.entities.agent import (
-    BaseAgentContext, BaseAgentResponse, StructuredQueryCtx, StructuredQueryResponse
+    BaseAgentResponse, State, StructuredQueryResponse
 )
 
 
-T_Context = TypeVar("T_Context", bound=BaseAgentContext)
+# T_Context = TypeVar("T_Context", bound=BaseAgentContext)
 T_Response = TypeVar("T_Response", bound=BaseAgentResponse)
 
 
@@ -24,7 +24,7 @@ class ILLM(ABC, Generic[T_Response]):
         ...
 
 
-class BaseAgent(ABC, Generic[T_Context, T_Response]):
+class BaseAgent(ABC, Generic[T_Response]):
     name: str = "BaseAgent"
     system_prompt: str
 
@@ -33,11 +33,11 @@ class BaseAgent(ABC, Generic[T_Context, T_Response]):
         super().__init__()
 
     @abstractmethod
-    def invoke(self, ctx: T_Context) -> T_Response: ...
+    def invoke(self, state: State) -> T_Response: ...
 
 
 class IStructQueryAgent(
-    BaseAgent[StructuredQueryCtx, StructuredQueryResponse]
+    BaseAgent[StructuredQueryResponse]
 ):
     def __init__(self, llm: ILLM[StructuredQueryResponse]) -> None:
         super().__init__(llm)

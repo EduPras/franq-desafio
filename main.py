@@ -1,31 +1,23 @@
-from typing import Dict
 from rich import print
-import sqlite3
+from dotenv import load_dotenv
 
+from src.application.use_cases.workflow import Pipeline
+from src.infrastructure.agents.struct import StructurerAgent
 
-def get_db_schema(db_path):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    # Busca o nome das tabelas e o comando SQL que as criou (DDL)
-    cursor.execute("SELECT name, sql FROM sqlite_master WHERE type='table';")
-    tables = cursor.fetchall()
-
-    schema_string = ""
-    for table_name, ddl in tables:
-        schema_string += f"Table: {table_name}\n{ddl}\n\n"
-
-    conn.close()
-    return schema_string
+load_dotenv()
 
 
 def main():
-    print("Hello from franq!")
-    # Pipeline
-    # question: str = some_input()
-    # output: Dict[Any, Any] = llm_pipeline(question)
+    struct_agent = StructurerAgent()
+    pipeline = Pipeline(struct_agent)
+
+    input = "Quantos clientes interagiram com campanhas de WhatsApp em 2024?"
+    input = "Quais categorias de produto tiveram o maior número de compras em média por cliente?"
+    input = "Qual o número de reclamações não resolvidas por canal?"
+    input = "Qual a tendência de reclamações por canal no último ano?"
+    response = pipeline.invoke(input)
+    print(response)
 
 
 if __name__ == "__main__":
     main()
-    print(get_db_schema('data/anexo_desafio_1.db'))

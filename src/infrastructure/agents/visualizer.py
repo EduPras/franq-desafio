@@ -1,4 +1,3 @@
-
 from src.domain.interfaces.agent import IStructQueryAgent
 from src.domain.entities.agent import (
     State, StructuredQueryResponse
@@ -7,13 +6,8 @@ from src.domain.entities.agent import (
 from src.infrastructure.agents.adapter import LangchainAdapter
 
 
-SYSTEM_PROMPT_CONTENT = """Você é um Especialista em SQLite e dashboards.
-### TAREFA
-1. **Consulta SQL**: Converter perguntas em linguagem natural em queries SQL precisas.
-2. **Tipo de visualização**: Definir o tipo de visualização com base no que é pedido no input.
-, valores entre (``table``, ``pie``,  ``bar``,  ``line`` ou ``text``).
-3. **Correção**: Caso você gere uma query errada, você recebe um histórico de queries e mensagens de erro.
-Utilize essas informações para corrigir e gerar uma nova query correta.
+SYSTEM_PROMPT_CONTENT = """Você é um Especialista em SQLite.
+Sua tarefa é converter perguntas em linguagem natural em queries SQL precisas.
 
 ### BANCO DE DADOS (DDL):
 {ddl}
@@ -39,27 +33,23 @@ Passos:
 
 ### FORMATO DE SAÍDA:
 - Retorne APENAS o código SQL puro, sem explicações ou blocos de markdown.
-- Tipo de visualização.
 """
 
 
-class StructurerAgent(IStructQueryAgent):
+class VisualizerAgent(IVisualizerAgent):
     def __init__(self) -> None:
         llm: LangchainAdapter = LangchainAdapter(
-            "Structurer",
-            "qwen2.5:3b", "ollama",
+            "Visualizer",
+            "gemini-2.5-flash", "google-genai",
             SYSTEM_PROMPT_CONTENT, StructuredQueryResponse
         )
         super().__init__(llm)
 
-    def invoke(self, state: State) -> StructuredQueryResponse:
+    def invoke(self, state: State) -> VisualizerResponse:
         ddl = state.get('ddl')
+        input_text = state.get('input_text')
         question = state.get('input_text')
-        errors = state.get("error_messages")
-        queries = state.get("queries")
-        human_msg = "DDL:\n{ddl}\n\nQuestion: {question}\n\n\
-        **ERRORS**:\n{errors}\n\n**ÚLTIMAS QUERIES**:{queries}"
-        values = {"ddl": ddl, "question": question,
-                  "errors": errors, "queries": queries}
+        human_msg = "DDL:\n{ddl}\n\nQuestion: {question}"
+        values = {"ddl": ddl, "question": question}
 
         return self.llm.call(human_msg, values)

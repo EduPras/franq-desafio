@@ -1,5 +1,7 @@
+from typing import Annotated, Any, List, Literal
+from typing_extensions import NotRequired, TypedDict
 from pydantic import BaseModel
-from src.domain.entities.dtos import QueryStructDTO
+import operator
 
 
 class BaseAgentContext(BaseModel):
@@ -11,8 +13,21 @@ class BaseAgentResponse(BaseModel):
 
 
 class StructuredQueryCtx(BaseAgentContext):
-    text: str
+    question: str
+    ddl: str
 
 
 class StructuredQueryResponse(BaseAgentResponse):
-    structured_ingredient: QueryStructDTO
+    query: str
+    vis_type: Literal['bar', 'pie', 'line', 'table', 'text']
+
+
+class State(TypedDict):
+    input_text: NotRequired[str]
+    ddl: str
+    success: bool
+    retries: int
+    error_messages: Annotated[list, operator.add]
+    queries: Annotated[list, operator.add]
+    output: NotRequired[StructuredQueryResponse]
+    data: NotRequired[Any]

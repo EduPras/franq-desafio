@@ -4,9 +4,9 @@ from langchain.chat_models import BaseChatModel, init_chat_model
 from langchain_core.messages import SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langsmith import traceable
-from domain.entities.agent import BaseAgentResponse
-from domain.exceptions.base import AIProviderError
-from domain.interfaces.agent import ILLM
+from src.domain.entities.agent import BaseAgentResponse
+from src.domain.exceptions.base import AIProviderError
+from src.domain.interfaces.agent import ILLM
 
 T = TypeVar("T", bound=BaseAgentResponse)
 
