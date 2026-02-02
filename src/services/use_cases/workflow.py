@@ -1,11 +1,17 @@
 from typing import Literal
-from rich import print
+import logging
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph import StateGraph, END
 
+from src.config.logger import LoggerBuilder
 from src.domain.entities.agent import State, StructuredQueryResponse
+from src.domain.exceptions.base import AIProviderError
 from src.domain.interfaces.agent import IStructQueryAgent, IVisualizationAgent
 from src.domain.interfaces.database import IDatabaseSQL
+
+
+logger_builder = LoggerBuilder(__name__, logging.DEBUG)
+logger = logger_builder.getLogger()
 
 
 class Pipeline():
@@ -21,21 +27,23 @@ class Pipeline():
         self.workflow: CompiledStateGraph = self._build_workflow()
 
     def _build_workflow(self) -> CompiledStateGraph:
-
+        logger.info("Building workflow")
         # Nodes
+
         def error_handler(state: State):
-            print("Treating errors")
             errors = state.get("error_messages", [])
             if errors == []:
                 errors = ["Erro desconhecido"]
-            last_error = errors[-1] if len(errors) >= 1 else errors[0]
+            last_error = errors[-1]
+
+            logger.error(f"Handling error: {last_error}")
             return {
                 "error_messages": [f"Erro na tentativa anterior: {last_error}"],
                 "success": False
             }
 
         def check_status(state: State) -> Literal["retry", "continue", "error"]:
-            print("Checking the status")
+            logger.info("Checking pipeline status")
             data = state.get("data")
             retries = state.get("retries", 0)
 
@@ -43,11 +51,11 @@ class Pipeline():
                 return "error"
             if data == [] or data is None:
                 return "retry"
-            if not state.get('success'):
-                return "retry"
             return "continue"
 
         def run_llm_struct(state: State):
+            logger.info(f"Sending '{state["input_text"]}' with {
+                        len(state['error_messages'])} previous errors and {len(state['queries'])}")
             struct_resp: StructuredQueryResponse = self.struct_agent.invoke(
                 state)
 
@@ -57,11 +65,22 @@ class Pipeline():
             }
 
         def todo_vis_node(state: State):
-            print(f"Visualizing with type: {state['output'].vis_type}")
-            response = self.vis_agent.invoke(state)
-            return {
-                "viz_code": response.code
-            }
+            success = False
+            logger.info("Invoking Visualizer agent")
+            try:
+                response = self.vis_agent.invoke(state)
+                if response.code is not None:
+                    success = True
+                return {
+                    "viz_code": response.code,
+                    "success": success
+                }
+            except AIProviderError:
+                logger.error("Error requesting API model. Try again.")
+
+        def audit_node(state: State):
+            logger.info(f"Pipeline finished with stats {state["success"]}")
+            logger.info(state)
 
         # Workflow
         wf = StateGraph(State)
@@ -71,6 +90,7 @@ class Pipeline():
         wf.add_node("sql_query", self.database.run_query)
         wf.add_node("error_node", error_handler)
         wf.add_node("vis_node", todo_vis_node)
+        wf.add_node("audit_node", audit_node)
         # edges / connections
         wf.set_entry_point("struct_llm")
         wf.add_edge("struct_llm", "sql_query")
@@ -85,11 +105,13 @@ class Pipeline():
             }
         )
         wf.add_edge("error_node", "struct_llm")
-        wf.add_edge("vis_node", END)
+        wf.add_edge("vis_node", "audit_node")
+        wf.add_edge("audit_node", END)
 
         return wf.compile()
 
     def invoke(self, input_text):
+        logger.info(f"Invoking text2sql with input: {input_text}")
         initial_state = State(
             input_text=input_text,
             success=False,

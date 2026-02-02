@@ -1,9 +1,14 @@
 import sqlite3
-from sqlite3 import Cursor, Connection
+from sqlite3 import Connection
+import logging
 from typing import Dict
 
+from src.config.logger import LoggerBuilder
 from src.domain.entities.agent import State
 from src.domain.interfaces.database import IDatabaseSQL
+
+logger_builder = LoggerBuilder(__name__, logging.DEBUG)
+logger = logger_builder.getLogger()
 
 
 class SqliteDB(IDatabaseSQL):
@@ -27,7 +32,7 @@ class SqliteDB(IDatabaseSQL):
             for table_name, ddl in tables:
                 schema_string += f"Table: {table_name}\n{ddl}\n\n"
         except Exception as e:
-            print(f'SQL error {e}')
+            logger.error(f'SQL error {e}')
             return ''
         finally:
             conn.close()
@@ -44,13 +49,11 @@ class SqliteDB(IDatabaseSQL):
             tables = cursor.fetchall()
 
             updates["data"] = tables
-            updates["success"] = True
             updates["retries"] = state.get("retries", 0) + 1
 
         except Exception as e:
-            print(f'Error: {e}')
+            logger.error(f'Error: {e}')
             updates["error_messages"] = [str(e)]
-            updates["success"] = False
             updates["data"] = None
             updates["retries"] = state.get("retries", 0) + 1
 

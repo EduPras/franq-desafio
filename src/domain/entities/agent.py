@@ -27,7 +27,7 @@ class VisualizationResponse(BaseAgentResponse):
 
 
 class State(TypedDict):
-    input_text: NotRequired[str]
+    input_text: str
     ddl: str
     success: bool
     retries: int
