@@ -23,9 +23,14 @@ com ``streamlit`` e ``pandas``, retornando para interface.
 </center>
 
 Além disso, foram seguidos os princípios SOLID e utilizado a **Arquitetura limpa** (*domain*, *infrastructure* e *services*).
-Logs estruturados e robustos também foram adicionados, a fim de depurar o funcionamento da pipeline.
+Logs estruturados e robustos também foram adicionados, a fim de depurar o funcionamento da pipeline. Por fim, 
+**Langsmith** foi utilizado para observabilidade.
 
+**Logs**
 ![logs](./imgs/logs.png)
+
+**Langsmith**
+![langsmith](./imgs/langsmith.png)
 
 **Definição do grafo**
 ```python
