@@ -4,7 +4,7 @@ import logging
 from typing import Dict
 
 from src.config.logger import LoggerBuilder
-from src.domain.entities.agent import State
+from src.domain.entities.agent import LLMNodesName, State
 from src.domain.interfaces.database import IDatabaseSQL
 
 logger_builder = LoggerBuilder(__name__, logging.DEBUG)
@@ -50,6 +50,7 @@ class SqliteDB(IDatabaseSQL):
 
             updates["data"] = tables
             updates["retries"] = state.get("retries", 0) + 1
+            updates["success"] = [LLMNodesName.STRUCT]
 
         except Exception as e:
             logger.error(f'Error: {e}')

@@ -14,8 +14,9 @@ class VisualizationAgent(IVisualizationAgent):
 
     def invoke(self, state: State) -> VisualizationResponse:
         data = state.get("data")
-        vis_type = state["output"].vis_type
-        user_query = state.get("input_text")
+        vis_type = state.get("vis_type")
+        input_text = state.get("input_text")
+        query = state.get("queries")[-1]
 
         df_sample = pd.DataFrame(data).head(3)
         schema_info = df_sample.dtypes.to_dict()
@@ -23,18 +24,21 @@ class VisualizationAgent(IVisualizationAgent):
 
         human_msg = """
         **CONTEXTO**
-        Pergunta do Usuário: {query}
+        Pergunta do Usuário: {input_text}
         Tipo de Gráfico Solicitado: {vis_type}
         
         **DADOS**
+        Query: {query}
         Esquema (Colunas/Tipos): {schema}
         Amostra (3 linhas): {sample}
         
         Gere o código Python para criar esta visualização no Streamlit.
+        Além disso, responda a questão de forma simples, com base na query feita e os dados obtidos.
         """
 
         values = {
-            "query": user_query,
+            "input_text": input_text,
+            "query": query,
             "vis_type": vis_type,
             "schema": str(schema_info),
             "sample": str(sample_records)

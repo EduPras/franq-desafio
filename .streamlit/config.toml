@@ -1,0 +1,17 @@
+[theme]
+base = "light"
+font = "serif"
+
+# Cores específicas para o Modo Claro
+[theme.light]
+primaryColor = "#687bea"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#131c25"
+
+# Cores específicas para o Modo Escuro
+[theme.dark]
+primaryColor = "#a2aef5" # Uma versão mais clara para contraste
+backgroundColor = "#131c25"
+secondaryBackgroundColor = "#262730"
+textColor = "#ffffff"

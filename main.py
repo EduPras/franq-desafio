@@ -1,3 +1,4 @@
+from typing import final
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -40,9 +41,12 @@ def main():
             else:
                 state = msg["content"]
 
-                if "output" in state:
+                if "reasoning" in state:
+                    st.markdown(state["reasoning"])
+
+                if "query" in state:
                     st.markdown(f"**Query SQL gerada:**")
-                    st.code(state["output"].query, language="sql")
+                    st.code(state["query"], language="sql")
 
                 if state.get("data") and "viz_code" in state:
                     render_visualization(state["viz_code"], state["data"])
@@ -60,8 +64,10 @@ def main():
             with st.spinner("Consultando banco de dados..."):
                 final_state = pipeline.invoke(prompt)
 
-                if "output" in final_state:
-                    st.code(final_state["output"].query, language="sql")
+                if "reasoning" in final_state:
+                    st.markdown(final_state["reasoning"])
+                if "query" in final_state:
+                    st.code(final_state["query"], language="sql")
 
                 if final_state.get("data") and "viz_code" in final_state:
                     render_visualization(

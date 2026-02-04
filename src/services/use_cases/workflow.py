@@ -4,7 +4,7 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph import StateGraph, END
 
 from src.config.logger import LoggerBuilder
-from src.domain.entities.agent import State, StructuredQueryResponse
+from src.domain.entities.agent import LLMNodesName, State, StructuredQueryResponse
 from src.domain.exceptions.base import AIProviderError
 from src.domain.interfaces.agent import IStructQueryAgent, IVisualizationAgent
 from src.domain.interfaces.database import IDatabaseSQL
@@ -39,7 +39,6 @@ class Pipeline():
             logger.error(f"Handling error: {last_error}")
             return {
                 "error_messages": [f"Erro na tentativa anterior: {last_error}"],
-                "success": False
             }
 
         def check_status(state: State) -> Literal["retry", "continue", "error"]:
@@ -60,21 +59,22 @@ class Pipeline():
                 state)
 
             return {
-                "output": struct_resp,
+                "query": struct_resp.query,
+                "vis_type": struct_resp.vis_type,
                 "queries": [struct_resp.query]
             }
 
-        def todo_vis_node(state: State):
-            success = False
+        def vis_node(state: State):
             logger.info("Invoking Visualizer agent")
             try:
                 response = self.vis_agent.invoke(state)
                 if response.code is not None:
-                    success = True
-                return {
-                    "viz_code": response.code,
-                    "success": success
-                }
+                    return {
+                        "viz_code": response.code,
+                        "reasoning": response.reasoning,
+                        "success": [LLMNodesName.VISUALIZATION]
+                    }
+
             except AIProviderError:
                 logger.error("Error requesting API model. Try again.")
 
@@ -89,7 +89,7 @@ class Pipeline():
         wf.add_node("struct_llm", run_llm_struct)
         wf.add_node("sql_query", self.database.run_query)
         wf.add_node("error_node", error_handler)
-        wf.add_node("vis_node", todo_vis_node)
+        wf.add_node("vis_node", vis_node)
         wf.add_node("audit_node", audit_node)
         # edges / connections
         wf.set_entry_point("struct_llm")
@@ -114,7 +114,7 @@ class Pipeline():
         logger.info(f"Invoking text2sql with input: {input_text}")
         initial_state = State(
             input_text=input_text,
-            success=False,
+            success=[],
             ddl=self.database.ddl,
             retries=0,
             queries=[],
