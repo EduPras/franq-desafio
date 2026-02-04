@@ -5,10 +5,9 @@ realizar a consulta e disponibilizar de forma visual (gráficos de barra, linha,
 Abaixo está um exemplo da implementação final, um chat em que o usuário pode realizar perguntas
 e o assistente virtual responde com a ``query`` realizada e a informação visual.
 
-<center>
-
-![example](./imgs/example.png)
-</center>
+<p align="center">
+<img src="./imgs/example.png" height=500/>
+</p>
 
 ## Arquitetura dos agentes
 
@@ -17,10 +16,10 @@ Utilizando **Langgraph** projetei um pipeline com dois agentes LLM:
 2. **VisualizerAgent**: Utiliza os dados retornados pela query e **gera** um código em tempo de execução,
 com ``streamlit`` e ``pandas``, retornando para interface.
 
-<center>
+<p align="center">
+<img src="./imgs/langgraph_workflow.png"/>
+</p>
 
-![workflow](./imgs/langgraph_workflow.png)
-</center>
 
 Além disso, foram seguidos os princípios SOLID e utilizado a **Arquitetura limpa** (*domain*, *infrastructure* e *services*).
 Logs estruturados e robustos também foram adicionados, a fim de depurar o funcionamento da pipeline. Por fim, 
