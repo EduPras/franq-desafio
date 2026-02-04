@@ -12,4 +12,3 @@ wheels/
 
 # uv lock file
 uv.lock
-.python-version
