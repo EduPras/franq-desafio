@@ -103,7 +103,8 @@ Para executar o projeto basta:
 - Gerar uma chave de API do gemini.
 - Criar um arquivo ``.env`` na raíza do projeto contendo ``GOOGLE_API_KEY=<chave api>``.
 - Com docker e docker compose instalado, execute ``docker compose build --no-cache``.
-- E ``docker compose up``. 
+- E ``docker compose up``.
+- Por fim, acesse http://localhost:8501.
 
 ## Sugestões e melhorias
 Devido ao tempo curto, não consegui implementar todos os recursos que julgo necessário para uma aplicação final, que incluem:
