@@ -1,13 +1,22 @@
 # Franq - SQL chat
 
-Projeto designado para o desafio técnico da Franq. Consiste em implementar um ``text2sql``, 
-realizar a consulta e disponibilizar de forma visual (gráficos de barra, linha, pizza, etc). 
-Abaixo está um exemplo da implementação final, um chat em que o usuário pode realizar perguntas
-e o assistente virtual responde com a ``query`` realizada e a informação visual.
+Projeto designado para o desafio técnico da Franq. Consiste em implementar uma espécie de **text2sql**, 
+onde apenas com linguagem natural é possível realizar umaa consulta e disponibilizar de forma visual (gráficos de barra, linha, pizza, etc). 
+A aplicação final se baseia em um chat no qual o usuário pode realizar perguntas
+e o assistente virtual responde com uma explicação, ``query`` realizada no banco e a informação visual.
+
 
 <p align="center">
 <img src="./imgs/example.png" height=500/>
 </p>
+
+## Sumário
+
+1. [Arquitetura dos agentes](#arquitetura-dos-agentes)
+2. [Exemplos](#exemplos)
+3. [Execução](#execução)
+4. [Sugestões e melhorias](#sugestões-e-melhorias)
+
 
 ## Arquitetura dos agentes
 
@@ -87,6 +96,14 @@ SELECT strftime('%Y-%m', data_contato) AS mes, LOWER(canal) AS canal, COUNT(id) 
 ```
 
 ![q3](./imgs/q3.png)
+
+## Execução
+
+Para executar o projeto basta:
+- Gerar uma chave de API do gemini.
+- Criar um arquivo ``.env`` na raíza do projeto contendo ``GOOGLE_API_KEY=<chave api>``.
+- Com docker e docker compose instalado, execute ``docker compose build --no-cache``.
+- E ``docker compose up``. 
 
 ## Sugestões e melhorias
 Devido ao tempo curto, não consegui implementar todos os recursos que julgo necessário para uma aplicação final, que incluem:
