@@ -33,7 +33,6 @@ class VisualizationAgent(IVisualizationAgent):
         Amostra (3 linhas): {sample}
         
         Gere o código Python para criar esta visualização no Streamlit.
-        Além disso, responda a questão de forma simples, com base na query feita e os dados obtidos.
         """
 
         values = {
