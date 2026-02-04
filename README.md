@@ -110,5 +110,4 @@ Devido ao tempo curto, não consegui implementar todos os recursos que julgo nec
 - **Tratamento de erros**: Melhorar o tratamento de erros no pipeline, com mais *exceptions* de domínio, podendo as trata-las de forma adequada.
 - **Sanitização**: O código gerado para a visualização é criado e executado em tempo de execução, o que pode trazer falhas de segurança
 como injeção de código malicioso.
-- **Modularização**: Separação entre frontend e backend, com comunicação através de uma API. 
-- **Conteinerização**: Criar *dockerfiles* para o projeto.
+- **Modularização**: Separação entre frontend e backend, com comunicação através de uma API.
